@@ -22,7 +22,8 @@ class EventsController extends Controller
         $request->validate([
             'title' => 'required',
             'description' => 'required',
-            'image' => 'required'
+            'image' => 'required',
+            'user_id' => 'required|exists:users,id'
         ]);
         Events::create($request->all());
         return response()->json(['message' => 'Event created successfully'], 201);
