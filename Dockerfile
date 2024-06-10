@@ -1,7 +1,7 @@
 FROM php:8.3-fpm
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y git \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -24,13 +24,7 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
     && docker-php-ext-install pdo pdo_mysql \
-    && docker-php-ext-install mongodb
-
-# Copy custom mongodb.ini to the PHP configuration directory
-#COPY ./mongodb.ini /usr/local/etc/php/conf.d/mongodb.ini
-
-# Copy php_mongodb.dll to PHP extension directory
-#COPY ./php_mongodb.dll /usr/lib/php/20230831/php_mongodb.dll
+    && pecl install mongodb && docker-php-ext-enable mongodb
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -47,6 +41,8 @@ RUN composer install
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# Expose port 8000 (default port for php artisan serve)
+EXPOSE 8000
+
+# Start Laravel development server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0"]
